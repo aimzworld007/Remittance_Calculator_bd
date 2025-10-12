@@ -172,8 +172,12 @@
     
     <!-- Footer Credit -->
     <footer class="w-full max-w-xl text-center py-4 text-sm text-slate-500 dark:text-slate-400">
-        <span id="footer-made-by">তৈরি করেছেন ❤️</span> <span class="font-semibold text-primary-blue dark:text-accent-dark"></span> 
-        — <a href="http://ainulislam.info" target="_blank" class="hover:underline text-primary-blue dark:text-accent-dark transition-colors">ainulislam.info</a>
+        <span id="footer-main-credit">
+            <!-- Content placed by JS -->
+        </span>
+        <div id="footer-second-line" class="mt-1">
+            <!-- Content placed by JS -->
+        </div>
     </footer>
 
     <script>
@@ -198,7 +202,9 @@
             modeSend: document.getElementById('mode-send'),
             modeReverse: document.getElementById('mode-reverse'),
             resultsHeader: document.getElementById('results-header'),
-            footerMadeBy: document.getElementById('footer-made-by'),
+            // Updated DOM references for new footer structure
+            footerMainCredit: document.getElementById('footer-main-credit'),
+            footerSecondLine: document.getElementById('footer-second-line'),
             darkModeToggle: document.getElementById('dark-mode-toggle'),
             sunIcon: document.getElementById('sun-icon'),
             moonIcon: document.getElementById('moon-icon'),
@@ -250,7 +256,10 @@
 
                 errFeeGreater: 'Error: Transfer amount ({amount}) is less than the fee ({fee}).', errInvalid: 'Enter valid positive amounts and exchange rate. Fee can be zero.',
                 
-                customCurrencyCode: 'Custom Currency Code (e.g., QAR)', customRate: 'Custom Exchange Rate', footerMadeBy: 'Made with ❤️ By',
+                customCurrencyCode: 'Custom Currency Code (e.g., QAR)', customRate: 'Custom Exchange Rate', 
+                // New footer lines
+                footerMain: 'Made with ❤️ By <a href="http://ainulislam.info" target="_blank" class="font-semibold text-primary-blue dark:text-accent-dark hover:underline transition-colors">Ainul islam</a>',
+                footerSecondLine: 'Also suitable as a mobile app for institutions.',
             },
             bn: {
                 title: '🇧🇩 রেমিট্যান্স ক্যালকুলেটর', langToggle: 'English', modeSend: 'টাকা পাঠান', modeReverse: 'বিপরীত হিসাব',
@@ -274,7 +283,10 @@
 
                 errFeeGreater: 'ত্রুটি: প্রেরণের পরিমাণ ({amount}) ফি ({fee}) এর চেয়ে কম।', errInvalid: 'বৈধ ধনাত্মক পরিমাণ ও বিনিময় হার দিন। ফি শূন্য হতে পারে।',
                 
-                customCurrencyCode: 'কাস্টম মুদ্রার কোড (যেমন: QAR)', customRate: 'কাস্টম বিনিময় হার', footerMadeBy: 'তৈরি করেছেন ❤️',
+                customCurrencyCode: 'কাস্টম মুদ্রার কোড (যেমন: QAR)', customRate: 'কাস্টম বিনিময় হার',
+                // New footer lines
+                footerMain: 'তৈরি করেছেন ❤️ <a href="http://ainulislam.info" target="_blank" class="font-semibold text-primary-blue dark:text-accent-dark hover:underline transition-colors">Ainul islam</a>',
+                footerSecondLine: '',
             }
         };
 
@@ -514,11 +526,14 @@
             DOM.modeReverse.textContent = getTranslation('modeReverse');
             DOM.labelSelectCurrency.textContent = getTranslation('selectCurrency');
             DOM.resultsHeader.textContent = getTranslation('resultsHeader');
-            DOM.footerMadeBy.textContent = getTranslation('footerMadeBy');
             
             // Custom inputs labels
             DOM.labelCustomCode.textContent = getTranslation('customCurrencyCode');
             DOM.labelCustomRate.textContent = getTranslation('customRate');
+            
+            // New Footer Logic
+            DOM.footerMainCredit.innerHTML = getTranslation('footerMain');
+            DOM.footerSecondLine.textContent = getTranslation('footerSecondLine');
 
             // 2. Update language toggle button
             DOM.langToggle.textContent = newLangToggleText;
@@ -674,5 +689,4 @@
 
 </body>
 </html>
-
 
