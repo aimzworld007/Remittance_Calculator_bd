@@ -1,1 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Remittance Calculator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .dark {
+            background-color: #0c0c1b; 
+            color: #f8fafc; 
+        }
+        .light {
+            background-color: #f5f7fa; 
+            color: #1e293b; 
+        }
+        .mode-button {
+            transition: all 0.2s;
+            box-shadow: none;
+            padding-top: 0.7rem; 
+            padding-bottom: 0.7rem; 
+        }
+        .mode-button.active {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        }
+        input:focus, select:focus {
+            box-shadow: 0 0 0 3px var(--tw-ring-color);
+        }
+
+        .result-card {
+            border-radius: 1rem;
+            padding: 1.25rem; 
+            margin-top: 1.25rem; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+
+        .main-total {
+            background-color: #e0f2fe; 
+            border-left: 6px solid #1e40af; 
+        }
+        .dark .main-total {
+            background-color: #1e293b; 
+            border-left: 6px solid #60a5fa; 
+        }
+
+        .secondary-detail {
+            font-size: 0.875rem; 
+            padding: 0.5rem 0;
+            border-top: 1px dashed #e2e8f0;
+        }
+        .dark .secondary-detail {
+            border-top: 1px dashed #475569;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e40af', 
+                        'primary-dark': '#3b82f6', 
+                        'accent-dark': '#60a5fa', 
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="light min-h-screen p-4 flex flex-col items-center justify-center">
+
+    <div id="calculator-app" class="w-full max-w-xl bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-4 md:p-8 transition-colors duration-300 my-8">
+        
+        <!-- Header, Language, & Dark Mode Toggle -->
+        <header class="mb-6 flex justify-between items-start">
+            <h1 id="app-title" class="text-xl md:text-2xl font-extrabold text-primary-blue dark:text-accent-dark tracking-tight">
+                🇧🇩 Remittance Calculator
+            </h1>
+            <div class="flex items-center space-x-2">
+                <!-- Language Toggle -->
+                <button id="lang-toggle" class="px-3 py-1 text-sm rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition-colors hover:bg-slate-300 dark:hover:bg-slate-600">
+                    English
+                </button>
+                <!-- Dark Mode Toggle -->
+                <button id="dark-mode-toggle" class="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <svg id="sun-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="moon-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Currency Selector -->
+        <div class="mb-6">
+            <label id="label-select-currency" for="currency-select" class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">
+                আপনার প্রেরক দেশ / মুদ্রা
+            </label>
+            <select id="currency-select" class="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-blue/30 focus:border-primary-blue dark:bg-slate-700 dark:text-white text-lg font-bold transition-all appearance-none cursor-pointer">
+                <!-- Options are populated by JavaScript -->
+            </select>
+        </div>
+
+        <!-- Custom Currency Inputs (Hidden by default) -->
+        <div id="custom-currency-inputs" class="space-y-4 mb-4 hidden border-t border-dashed border-slate-300 dark:border-slate-600 pt-4">
+            <div>
+                <label id="label-custom-code" for="custom-code-input" class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">
+                    কাস্টম মুদ্রার কোড (যেমন: QAR)
+                </label>
+                <input type="text" id="custom-code-input" value="XXX" maxlength="3" class="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-blue/30 focus:border-primary-blue dark:bg-slate-700 dark:text-white text-lg font-bold">
+            </div>
+            <div>
+                <label id="label-custom-rate" for="custom-rate-input" class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">
+                    কাস্টম বিনিময় হার ({BDT_CODE} প্রতি ১ XXX)
+                </label>
+                <input type="number" id="custom-rate-input" value="100" min="0" step="0.001" class="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-blue/30 focus:border-primary-blue dark:bg-slate-700 dark:text-white text-lg font-bold">
+            </div>
+        </div>
+
+        <!-- Mode Toggle Buttons -->
+        <div class="flex space-x-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl mb-6 shadow-inner">
+            <button id="mode-send" data-mode="SEND" class="mode-button flex-1 text-sm font-semibold rounded-lg bg-primary-blue text-white active">
+                টাকা পাঠান
+            </button>
+            <button id="mode-reverse" data-mode="REVERSE" class="mode-button flex-1 text-sm font-semibold rounded-lg bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                বিপরীত হিসাব
+            </button>
+        </div>
+
+        <!-- Input Fields -->
+        <div class="space-y-4">
+            <!-- Amount Input -->
+            <div>
+                <label id="amount-label" for="amount-input" class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">প্রেরণের পরিমাণ (দ.ই)</label>
+                <input type="number" id="amount-input" value="1000" placeholder="পরিমাণ লিখুন" min="0" step="0.01" class="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-blue/30 focus:border-primary-blue dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 text-lg font-bold transition-all">
+            </div>
+
+            <!-- Rate Input (Hidden for Custom, Managed in JS) -->
+            <div id="rate-input-container">
+                <label id="rate-label" for="rate-input" class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">বিনিময় হার (৳ প্রতি ১ দ.ই)</label>
+                <input type="number" id="rate-input" value="33" placeholder="বিনিময় হার লিখুন" min="0" step="0.001" class="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-blue/30 focus:border-primary-blue dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 text-lg font-bold transition-all">
+            </div>
+            
+            <!-- Bank Fee Input -->
+            <div id="fee-input-container">
+                <label id="fee-label" for="fee-input" class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300 transition-colors">ব্যাংক/ট্রান্সফার ফি (দ.ই)</label>
+                <input type="number" id="fee-input" value="15" placeholder="ডিফল্ট ১৫ দ.ই" min="0" step="0.01" class="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-blue/30 focus:border-primary-blue dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 text-lg font-bold transition-all">
+            </div>
+        </div>
+
+        <!-- Results Section Container (Dynamically updates content) -->
+        <div id="results-container" class="mt-6">
+            <h2 id="results-header" class="text-lg font-bold text-slate-800 dark:text-white mb-3">হিসাবের ফলাফল</h2>
+            
+            <div id="dynamic-result-card" class="result-card bg-white dark:bg-slate-800">
+                <!-- Content will be injected by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Message Box for Errors/Info -->
+        <div id="message-box" class="mt-4 p-3 hidden bg-red-100 border border-red-400 text-red-700 rounded-xl transition-opacity dark:bg-red-900 dark:text-red-300 dark:border-red-700 text-sm">
+            বৈধ ধনাত্মক পরিমাণ ও বিনিময় হার দিন। ফি শূন্য হতে পারে।
+        </div>
+
+    </div>
+    
+    <!-- Footer Credit -->
+    <footer class="w-full max-w-xl text-center py-4 text-sm text-slate-500 dark:text-slate-400">
+        <span id="footer-made-by">তৈরি করেছেন ❤️</span> <span class="font-semibold text-primary-blue dark:text-accent-dark"></span> 
+        — <a href="http://ainulislam.info" target="_blank" class="hover:underline text-primary-blue dark:text-accent-dark transition-colors">ainulislam.info</a>
+    </footer>
+
+    <script>
+        const DOM = {
+            appTitle: document.getElementById('app-title'),
+            langToggle: document.getElementById('lang-toggle'),
+            currencySelect: document.getElementById('currency-select'),
+            customCurrencyInputs: document.getElementById('custom-currency-inputs'),
+            customCodeInput: document.getElementById('custom-code-input'),
+            customRateInput: document.getElementById('custom-rate-input'),
+            amountInput: document.getElementById('amount-input'),
+            rateInput: document.getElementById('rate-input'),
+            rateInputContainer: document.getElementById('rate-input-container'),
+            feeInput: document.getElementById('fee-input'), 
+            feeInputContainer: document.getElementById('fee-input-container'), 
+            amountLabel: document.getElementById('amount-label'),
+            rateLabel: document.getElementById('rate-label'),
+            feeLabel: document.getElementById('fee-label'), 
+            labelSelectCurrency: document.getElementById('label-select-currency'),
+            labelCustomCode: document.getElementById('label-custom-code'),
+            labelCustomRate: document.getElementById('label-custom-rate'),
+            modeSend: document.getElementById('mode-send'),
+            modeReverse: document.getElementById('mode-reverse'),
+            resultsHeader: document.getElementById('results-header'),
+            footerMadeBy: document.getElementById('footer-made-by'),
+            darkModeToggle: document.getElementById('dark-mode-toggle'),
+            sunIcon: document.getElementById('sun-icon'),
+            moonIcon: document.getElementById('moon-icon'),
+            messageBox: document.getElementById('message-box'),
+            dynamicResultCard: document.getElementById('dynamic-result-card'),
+        };
+
+        // --- CONFIGURATION ---
+        const BDT_CODE = 'BDT';
+        const INCENTIVE_RATE = 0.025; 
+        const BDT_SYMBOL = '৳';
+
+        const CURRENCY_SYMBOLS = {
+            'AED': 'د.إ', 'SAR': '﷼', 'KWD': 'د.ك', 'QAR': 'ر.ق', 'OMR': 'ر.ع.', 'BHD': '.د.ب', 'USD': '$', 'GBP': '£', 'BDT': BDT_SYMBOL, 'XXX': '¤' 
+        };
+
+        const COUNTRY_CURRENCY_MAP = {
+            'UAE (Dirham)': { key: 'UAE (Dirham)', code: 'AED', symbol: 'د.إ', defaultRate: 33.00, defaultFee: 15, defaultAmount: 1000, flag: '🇦🇪' },
+            'Saudi Arabia (Riyal)': { key: 'Saudi Arabia (Riyal)', code: 'SAR', symbol: '﷼', defaultRate: 31.00, defaultFee: 20, defaultAmount: 1000, flag: '🇸🇦' },
+            'Kuwait (Dinar)': { key: 'Kuwait (Dinar)', code: 'KWD', symbol: 'د.ك', defaultRate: 380.00, defaultFee: 3, defaultAmount: 200, flag: '🇰🇼' },
+            'Qatar (Riyal)': { key: 'Qatar (Riyal)', code: 'QAR', symbol: 'ر.ق', defaultRate: 32.20, defaultFee: 18, defaultAmount: 1000, flag: '🇶🇦' },
+            'Oman (Rial)': { key: 'Oman (Rial)', code: 'OMR', symbol: 'ر.ع.', defaultRate: 300.00, defaultFee: 5, defaultAmount: 100, flag: '🇴🇲' },
+            'Bahrain (Dinar)': { key: 'Bahrain (Dinar)', code: 'BHD', symbol: '.د.ب', defaultRate: 315.00, defaultFee: 4, defaultAmount: 150, flag: '🇧🇭' },
+            'USA (Dollar)': { key: 'USA (Dollar)', code: 'USD', symbol: '$', defaultRate: 117.00, defaultFee: 5, defaultAmount: 500, flag: '🇺🇸' },
+            'United Kingdom (Pound)': { key: 'United Kingdom (Pound)', code: 'GBP', symbol: '£', defaultRate: 148.00, defaultFee: 7, defaultAmount: 300, flag: '🇬🇧' },
+            'Custom Country': { key: 'Custom Country', code: 'XXX', symbol: '¤', defaultRate: 100, defaultFee: 0, defaultAmount: 500, flag: '🌐' },
+        };
+        
+        const LANGUAGE_MAP = {
+            en: {
+                title: '🇧🇩 Remittance Calculator', langToggle: 'বাংলা', modeSend: 'Send Money', modeReverse: 'Reverse Calculation',
+                selectCurrency: 'Your Sending Country / Currency', amountLabelSend: 'Amount to Send ({fcc})', amountLabelReverse: 'Target BDT to Receive ({BDT_CODE})',
+                rateLabel: 'Exchange Rate ({BDT_CODE} per 1 {fcc})', feeLabel: 'Bank/Transfer Fee ({fcc})', resultsHeader: 'Calculation Results',
+                
+                // SEND MODE LABELS
+                netConverted: 'Net {fcc} Converted (Amount - Fee)', feeDeducted: 'Bank/Transfer Fee ({fcc})',
+                bdtGross: 'Gross BDT Value (before incentive)', incentiveAdded: 'Remittance Incentive (+2.5% on BDT Gross)',
+                totalBdtReceived: 'TOTAL BDT RECEIVED',
+                effectiveRateLabel: 'Effective Rate (Including Incentive)',
+                // Updated summary: uses currency symbols and avoids duplicate codes
+                summaryMessage: 'To receive {bdtResult}, you need to send {fccInput} in total, including the bank fee and incentive.', 
+
+                // REVERSE MODE LABELS (Unified with Send)
+                fccTarget: 'BDT Value Needed for Conversion',
+                incentiveRemovedReverse: 'Incentive Removed (-2.5% BDT)',
+                bdtBaseAmount: 'Net BDT Value (After Incentive Removed)',
+                fccNeededPreFee: 'Net {fcc} Needed (To achieve BDT after incentive)',
+                totalFccToSend: 'TOTAL {fcc} TO SEND (Including Fee)',
+
+                errFeeGreater: 'Error: Transfer amount ({amount}) is less than the fee ({fee}).', errInvalid: 'Enter valid positive amounts and exchange rate. Fee can be zero.',
+                
+                customCurrencyCode: 'Custom Currency Code (e.g., QAR)', customRate: 'Custom Exchange Rate', footerMadeBy: 'Made with ❤️ By',
+            },
+            bn: {
+                title: '🇧🇩 রেমিট্যান্স ক্যালকুলেটর', langToggle: 'English', modeSend: 'টাকা পাঠান', modeReverse: 'বিপরীত হিসাব',
+                selectCurrency: 'আপনার প্রেরক দেশ / মুদ্রা', amountLabelSend: 'প্রেরণের পরিমাণ ({fcc})', amountLabelReverse: 'প্রাপ্য বিডিটি (BDT) পরিমাণ ({BDT_CODE})',
+                rateLabel: 'বিনিময় হার ({BDT_CODE} প্রতি ১ {fcc})', feeLabel: 'ব্যাংক/ট্রান্সফার ফি ({fcc})', resultsHeader: 'হিসাবের ফলাফল',
+                
+                // SEND MODE LABELS
+                netConverted: 'মোট {fcc} কনভার্টেড (পরিমাণ - ফি)', feeDeducted: 'ব্যাংক/ট্রান্সফার ফি ({fcc})',
+                bdtGross: 'মোট বিডিটি মূল্য (প্রণোদনা ছাড়া)', incentiveAdded: 'রেমিট্যান্স প্রণোদনা (+২.৫% মোট বিডিটি মূল্যের উপর)',
+                totalBdtReceived: 'সর্বমোট প্রাপ্ত বিডিটি (BDT)',
+                effectiveRateLabel: 'প্রণোদনা সহ কার্যকর রেট',
+                // Updated summary: uses currency symbols and avoids duplicate codes
+                summaryMessage: '{bdtResult} টাকা পেতে, ২.৫% প্রণোদনা ও ব্যাংক ফি সহ আপনাকে মোট {fccInput} পাঠাতে হবে।', 
+
+                // REVERSE MODE LABELS (Unified with Send)
+                fccTarget: 'রূপান্তরের জন্য প্রয়োজনীয় BDT মূল্য',
+                incentiveRemovedReverse: 'বাদ দেওয়া প্রণোদনা (-২.৫% BDT)',
+                bdtBaseAmount: 'নেট BDT মূল্য (প্রণোদনা বাদ দেওয়ার পর)',
+                fccNeededPreFee: 'প্রয়োজনীয় নেট {fcc} (রূপান্তরের পর)',
+                totalFccToSend: 'সর্বমোট {fcc} পাঠাতে হবে (ফি সহ)',
+
+                errFeeGreater: 'ত্রুটি: প্রেরণের পরিমাণ ({amount}) ফি ({fee}) এর চেয়ে কম।', errInvalid: 'বৈধ ধনাত্মক পরিমাণ ও বিনিময় হার দিন। ফি শূন্য হতে পারে।',
+                
+                customCurrencyCode: 'কাস্টম মুদ্রার কোড (যেমন: QAR)', customRate: 'কাস্টম বিনিময় হার', footerMadeBy: 'তৈরি করেছেন ❤️',
+            }
+        };
+
+        // --- STATE & CONSTANTS ---
+        let conversionMode = 'SEND'; 
+        let currentLang = 'bn'; // DEFAULT LANGUAGE SET TO BANGLA
+        let foreignCurrency = COUNTRY_CURRENCY_MAP['UAE (Dirham)']; 
+        
+
+        // --- UTILITY FUNCTIONS ---
+
+        /**
+         * Finds the current translation string, substituting currency codes/symbols.
+         */
+        function getTranslation(key, values = {}) {
+            let text = LANGUAGE_MAP[currentLang][key] || key;
+            const fccCode = foreignCurrency.code;
+            const fccSymbol = foreignCurrency.symbol;
+            const bdtSymbol = CURRENCY_SYMBOLS[BDT_CODE];
+
+            // Replace currency placeholders with symbols
+            text = text.replace(/{fcc}/g, fccSymbol).replace(/{BDT_CODE}/g, bdtSymbol);
+            
+            // Replace custom value placeholders
+            for (const vKey in values) {
+                text = text.replace(new RegExp(`{${vKey}}`, 'g'), values[vKey]);
+            }
+            return text;
+        }
+
+        /**
+         * Formats a number as a currency string with two decimal places and commas, including the symbol.
+         */
+        function formatCurrency(value, currencyCode) {
+            if (isNaN(value) || value === null) return `0.00 ${CURRENCY_SYMBOLS[currencyCode]}`;
+            
+            const symbol = CURRENCY_SYMBOLS[currencyCode] || currencyCode;
+            const formattedValue = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(value);
+            
+            // For BDT and some Gulf Currencies, place the symbol after. For USD/GBP place before.
+            const symbolAfter = (currencyCode === BDT_CODE || currencyCode === 'AED' || currencyCode === 'SAR' || currencyCode === 'QAR' || currencyCode === 'OMR' || currencyCode === 'BHD' || currencyCode === 'KWD');
+            
+            return symbolAfter ? `${formattedValue} ${symbol}` : `${symbol}${formattedValue}`;
+        }
+
+        /**
+         * Formats a rate number with four decimal places.
+         */
+        function formatRate(value) {
+            if (isNaN(value) || value === null) return '0.0000';
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 4,
+                maximumFractionDigits: 4,
+            }).format(value);
+        }
+        
+        // --- CALCULATION LOGIC ---
+
+        function calculateSendMoney(amount, rate, fee) {
+            const fccCode = foreignCurrency.code;
+            const fccSymbol = foreignCurrency.symbol;
+            
+            // Send Money Logic (FCC -> BDT)
+            const netForeignToSend = amount - fee;
+            const bdtGross = netForeignToSend * rate;
+            const incentive = bdtGross * INCENTIVE_RATE;
+            const totalBDT = bdtGross + incentive;
+            const effectiveRate = rate * (1 + INCENTIVE_RATE);
+
+            if (netForeignToSend < 0) {
+                 DOM.dynamicResultCard.innerHTML = `
+                    <div class="text-center py-4 text-red-500 dark:text-red-400 text-sm font-semibold">
+                        ${getTranslation('errFeeGreater', { amount: formatCurrency(amount, fccCode), fee: formatCurrency(fee, fccCode) })}
+                    </div>
+                `;
+                return;
+            }
+
+            // Summary message variables
+            const bdtResultFormatted = formatCurrency(totalBDT, BDT_CODE);
+            const fccInputFormatted = formatCurrency(amount, fccCode);
+
+            DOM.dynamicResultCard.innerHTML = `
+                <!-- Effective Rate -->
+                <div class="flex justify-between items-center mb-4 p-3 rounded-lg bg-green-50 dark:bg-slate-700 text-green-700 dark:text-green-400 font-semibold text-sm md:text-base">
+                    <span>${getTranslation('effectiveRateLabel')}</span>
+                    <span class="font-bold text-base md:text-lg">${formatRate(effectiveRate)}</span>
+                </div>
+
+                <!-- 1. Net Currency Converted -->
+                <div class="flex justify-between items-center mb-4 p-3 rounded-lg bg-blue-50 dark:bg-slate-700 text-primary-blue dark:text-accent-dark font-semibold text-sm md:text-base">
+                    <span>${getTranslation('netConverted')}</span>
+                    <span class="font-bold text-base md:text-lg">${formatCurrency(netForeignToSend, fccCode)}</span>
+                </div>
+
+                <!-- 2. Fee Detail -->
+                <div class="flex justify-between items-center text-red-600 dark:text-red-400 secondary-detail">
+                    <span class="font-medium">${getTranslation('feeDeducted')}</span>
+                    <span class="font-bold">${formatCurrency(fee, fccCode)}</span>
+                </div>
+                
+                <!-- 3. Base BDT Amount -->
+                <div class="flex justify-between items-center text-slate-600 dark:text-slate-300 secondary-detail">
+                    <span class="font-medium">${getTranslation('bdtGross')}</span>
+                    <span class="font-semibold">${formatCurrency(bdtGross, BDT_CODE)}</span>
+                </div>
+
+                <!-- 4. Incentive -->
+                <div class="flex justify-between items-center text-green-600 dark:text-green-400 secondary-detail">
+                    <span class="font-medium">${getTranslation('incentiveAdded')}</span>
+                    <span class="font-bold">${formatCurrency(incentive, BDT_CODE)}</span>
+                </div>
+                
+                <!-- 5. Total Amount -->
+                <div class="main-total p-3 rounded-xl flex justify-between items-center mt-4">
+                    <span class="text-lg md:text-xl font-extrabold text-slate-800 dark:text-white">${getTranslation('totalBdtReceived')}</span>
+                    <span class="text-2xl md:text-3xl font-extrabold text-primary-blue dark:text-accent-dark">${bdtResultFormatted}</span>
+                </div>
+
+                <!-- FINAL SUMMARY MESSAGE -->
+                <div class="mt-4 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    ${getTranslation('summaryMessage', { bdtResult: bdtResultFormatted, fccInput: fccInputFormatted })}
+                </div>
+            `;
+        }
+
+        function calculateReverse(amount, rate, fee) {
+            const fccCode = foreignCurrency.code;
+            
+            // Reverse Logic (BDT -> FCC)
+            const bdtTarget = amount; // The amount user wants to receive (BDT)
+            const bdtWithoutIncentive = bdtTarget / (1 + INCENTIVE_RATE);
+            const incentiveRemoved = bdtTarget - bdtWithoutIncentive;
+            const fccNeededPreFee = bdtWithoutIncentive / rate; 
+            const totalFccWithIncentiveLogic = fccNeededPreFee + fee; 
+            
+            // Summary message variables
+            const bdtResultFormatted = formatCurrency(bdtTarget, BDT_CODE);
+            const fccInputFormatted = formatCurrency(totalFccWithIncentiveLogic, fccCode);
+
+            DOM.dynamicResultCard.innerHTML = `
+                <!-- Effective Rate -->
+                <div class="flex justify-between items-center mb-4 p-3 rounded-lg bg-green-50 dark:bg-slate-700 text-green-700 dark:text-green-400 font-semibold text-sm md:text-base">
+                    <span>${getTranslation('effectiveRateLabel')}</span>
+                    <span class="font-bold text-base md:text-lg">${formatRate(rate * (1 + INCENTIVE_RATE))}</span>
+                </div>
+                
+                <!-- 1. FCC Target (Equivalent to Net Converted in Send Mode) -->
+                <div class="flex justify-between items-center mb-4 p-3 rounded-lg bg-blue-50 dark:bg-slate-700 text-primary-blue dark:text-accent-dark font-semibold text-sm md:text-base">
+                    <span>${getTranslation('fccNeededPreFee')}</span>
+                    <span class="font-bold text-base md:text-lg">${formatCurrency(fccNeededPreFee, fccCode)}</span>
+                </div>
+                
+                <!-- 2. Fee Detail -->
+                <div class="flex justify-between items-center text-red-600 dark:text-red-400 secondary-detail">
+                    <span class="font-medium">${getTranslation('feeDeducted')}</span>
+                    <span class="font-bold">${formatCurrency(fee, fccCode)}</span>
+                </div>
+                
+                <!-- 3. Base BDT Amount (Equivalent to Gross BDT in Send Mode) -->
+                <div class="flex justify-between items-center text-slate-600 dark:text-slate-300 secondary-detail">
+                    <span class="font-medium">${getTranslation('bdtBaseAmount')}</span>
+                    <span class="font-semibold">${formatCurrency(bdtWithoutIncentive, BDT_CODE)}</span>
+                </div>
+                
+                <!-- 4. Incentive Removed (Equivalent to Incentive in Send Mode) -->
+                <div class="flex justify-between items-center text-green-600 dark:text-green-400 secondary-detail">
+                    <span class="font-medium">${getTranslation('incentiveRemovedReverse')}</span>
+                    <span class="font-bold">${formatCurrency(incentiveRemoved, BDT_CODE)}</span>
+                </div>
+
+                <!-- 5. Total Amount -->
+                <div class="main-total p-3 rounded-xl flex justify-between items-center mt-4">
+                    <span class="text-lg md:text-xl font-extrabold text-slate-800 dark:text-white">${getTranslation('totalFccToSend')}</span>
+                    <span class="text-2xl md:text-3xl font-extrabold text-primary-blue dark:text-accent-dark">${fccInputFormatted}</span>
+                </div>
+
+                <!-- FINAL SUMMARY MESSAGE -->
+                <div class="mt-4 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    ${getTranslation('summaryMessage', { bdtResult: bdtResultFormatted, fccInput: fccInputFormatted })}
+                </div>
+            `;
+        }
+
+
+        /**
+         * Main calculation function.
+         */
+        function calculate() {
+            let amount = parseFloat(DOM.amountInput.value) || 0;
+            let rate = parseFloat(DOM.rateInput.value) || 0;
+            let fee = parseFloat(DOM.feeInput.value) || 0;
+
+            // Override rate/code if Custom mode is active
+            if (foreignCurrency.key === 'Custom Country') {
+                rate = parseFloat(DOM.customRateInput.value) || 0;
+                // Update foreignCurrency with custom symbol/code for use in other functions
+                const customCode = DOM.customCodeInput.value.toUpperCase().slice(0, 3) || 'XXX';
+                foreignCurrency = { ...foreignCurrency, code: customCode, symbol: CURRENCY_SYMBOLS[customCode] || '¤' };
+            }
+
+            // Simple validation for rate and amount (fee can be 0)
+            if (amount < 0 || rate <= 0 || fee < 0) {
+                DOM.dynamicResultCard.innerHTML = `
+                    <div class="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">
+                        ${getTranslation('errInvalid')}
+                    </div>
+                `;
+                DOM.messageBox.classList.remove('hidden');
+                return;
+            } else {
+                DOM.messageBox.classList.add('hidden');
+            }
+
+            if (conversionMode === 'SEND') {
+                calculateSendMoney(amount, rate, fee);
+            } else {
+                calculateReverse(amount, rate, fee);
+            }
+        }
+
+        // --- UI MANIPULATION ---
+
+        /**
+         * Updates all static UI text based on the current language (currentLang).
+         */
+        function setLanguage(lang) {
+            currentLang = lang;
+            const newLangToggleText = getTranslation('langToggle');
+
+            // 1. Update static elements
+            DOM.appTitle.textContent = getTranslation('title');
+            DOM.modeSend.textContent = getTranslation('modeSend');
+            DOM.modeReverse.textContent = getTranslation('modeReverse');
+            DOM.labelSelectCurrency.textContent = getTranslation('selectCurrency');
+            DOM.resultsHeader.textContent = getTranslation('resultsHeader');
+            DOM.footerMadeBy.textContent = getTranslation('footerMadeBy');
+            
+            // Custom inputs labels
+            DOM.labelCustomCode.textContent = getTranslation('customCurrencyCode');
+            DOM.labelCustomRate.textContent = getTranslation('customRate');
+
+            // 2. Update language toggle button
+            DOM.langToggle.textContent = newLangToggleText;
+
+            // 3. Re-run UI update to refresh dynamic labels
+            updateCurrencyUI(foreignCurrency);
+            setConversionMode(conversionMode, false); // Keep current mode
+            calculate();
+        }
+
+        /**
+         * Updates all currency-related UI elements based on the selected currency.
+         */
+        function updateCurrencyUI(currencyConfig) {
+            foreignCurrency = currencyConfig;
+            
+            const isCustom = currencyConfig.key === 'Custom Country';
+            
+            // 1. Set Input Visibility and Labels
+            if (isCustom) {
+                DOM.customCurrencyInputs.classList.remove('hidden');
+                DOM.rateInputContainer.classList.add('hidden'); // Hide default rate input
+            } else {
+                DOM.customCurrencyInputs.classList.add('hidden');
+                DOM.rateInputContainer.classList.remove('hidden'); // Show default rate input
+                
+                // Set default values for standard currencies
+                DOM.amountInput.value = foreignCurrency.defaultAmount;
+                DOM.rateInput.value = foreignCurrency.defaultRate;
+                DOM.feeInput.value = foreignCurrency.defaultFee;
+            }
+            
+            // 2. Update dynamic input labels
+            DOM.rateLabel.textContent = getTranslation('rateLabel');
+            DOM.feeLabel.textContent = getTranslation('feeLabel');
+
+            // 3. Re-run mode setup to correctly label amount field
+            setConversionMode(conversionMode, false);
+
+            // 4. Recalculate and Render
+            calculate();
+        }
+
+        /**
+         * Toggles the conversion mode and updates the UI labels and fee visibility.
+         */
+        function setConversionMode(mode, resetAmount = true) {
+            conversionMode = mode;
+
+            // Reset button styles
+            DOM.modeSend.classList.remove('bg-primary-blue', 'text-white', 'hover:bg-slate-200', 'dark:hover:bg-slate-700', 'text-slate-600', 'dark:text-slate-300', 'active');
+            DOM.modeReverse.classList.remove('bg-primary-blue', 'text-white', 'hover:bg-slate-200', 'dark:hover:bg-slate-700', 'text-slate-600', 'dark:text-slate-300', 'active');
+
+            if (mode === 'SEND') {
+                // Send Money Mode: [FCC] -> BDT
+                DOM.amountLabel.textContent = getTranslation('amountLabelSend');
+                DOM.modeSend.classList.add('bg-primary-blue', 'text-white', 'active');
+                DOM.modeReverse.classList.add('bg-transparent', 'text-slate-600', 'dark:text-slate-300', 'hover:bg-slate-200', 'dark:hover:bg-slate-700');
+                if (resetAmount) {
+                     DOM.amountInput.value = foreignCurrency.defaultAmount; 
+                }
+            } else {
+                // Reverse Mode: BDT -> [FCC]
+                DOM.amountLabel.textContent = getTranslation('amountLabelReverse');
+                DOM.modeReverse.classList.add('bg-primary-blue', 'text-white', 'active');
+                DOM.modeSend.classList.add('bg-transparent', 'text-slate-600', 'dark:text-slate-300', 'hover:bg-slate-200', 'dark:hover:bg-slate-700');
+                if (resetAmount) {
+                     DOM.amountInput.value = 100000; // Fixed large BDT default
+                }
+            }
+            
+            calculate();
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.body.classList.toggle('dark');
+            document.body.classList.toggle('light', !isDark);
+            
+            DOM.sunIcon.classList.toggle('hidden', !isDark);
+            DOM.moonIcon.classList.toggle('hidden', isDark);
+
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        /**
+         * Populates the currency select dropdown.
+         */
+        function populateCurrencySelector() {
+            DOM.currencySelect.innerHTML = '';
+            for (const key in COUNTRY_CURRENCY_MAP) {
+                const config = COUNTRY_CURRENCY_MAP[key];
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = `${config.flag} ${key} (${config.code})`;
+                DOM.currencySelect.appendChild(option);
+            }
+        }
+
+        /**
+         * Initializes event listeners and sets initial state.
+         */
+        function initialize() {
+            populateCurrencySelector();
+
+            // --- Event Listeners ---
+            DOM.amountInput.addEventListener('input', calculate);
+            DOM.rateInput.addEventListener('input', calculate);
+            DOM.feeInput.addEventListener('input', calculate); 
+            DOM.customCodeInput.addEventListener('input', calculate);
+            DOM.customRateInput.addEventListener('input', calculate);
+            
+            DOM.currencySelect.addEventListener('change', (e) => {
+                const selectedKey = e.target.value;
+                const config = COUNTRY_CURRENCY_MAP[selectedKey];
+                updateCurrencyUI(config);
+            });
+            
+            DOM.modeSend.addEventListener('click', () => setConversionMode('SEND'));
+            DOM.modeReverse.addEventListener('click', () => setConversionMode('REVERSE'));
+            DOM.darkModeToggle.addEventListener('click', toggleDarkMode);
+            DOM.langToggle.addEventListener('click', () => {
+                const newLang = currentLang === 'en' ? 'bn' : 'en';
+                setLanguage(newLang);
+                localStorage.setItem('lang', newLang);
+            });
+
+            // --- Initial Setup ---
+            
+            // 1. Load Dark Mode Preference
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            const isDark = (savedTheme === 'dark' || (!savedTheme && prefersDark));
+            
+            if (isDark) { document.body.classList.add('dark'); document.body.classList.remove('light'); } 
+            else { document.body.classList.remove('dark'); document.body.classList.add('light'); }
+            DOM.sunIcon.classList.toggle('hidden', !isDark);
+            DOM.moonIcon.classList.toggle('hidden', isDark);
+
+            // 2. Load Language Preference (Defaulting to Bangla if not saved)
+            const savedLang = localStorage.getItem('lang') || 'bn'; // Changed default to 'bn'
+            
+            // 3. Set initial mode, currency, and language
+            const initialCurrencyConfig = COUNTRY_CURRENCY_MAP[DOM.currencySelect.value];
+            updateCurrencyUI(initialCurrencyConfig);
+            setLanguage(savedLang); // This runs the full UI update and calculate
+            setConversionMode('SEND');
+        }
+
+        // Run initialization when the script loads
+        window.onload = initialize;
+    </script>
+
+</body>
+</html>
+
 
