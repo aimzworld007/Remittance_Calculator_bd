@@ -204,7 +204,7 @@
             resultsHeader: document.getElementById('results-header'),
             // Updated DOM references for new footer structure
             footerMainCredit: document.getElementById('footer-main-credit'),
-             : document.getElementById('footer-second-line'),
+       
             darkModeToggle: document.getElementById('dark-mode-toggle'),
             sunIcon: document.getElementById('sun-icon'),
             moonIcon: document.getElementById('moon-icon'),
@@ -259,7 +259,7 @@
                 customCurrencyCode: 'Custom Currency Code (e.g., QAR)', customRate: 'Custom Exchange Rate', 
                 // New footer lines
                 footerMain: 'Made with ❤️ By <a href="http://ainulislam.info" target="_blank" class="font-semibold text-primary-blue dark:text-accent-dark hover:underline transition-colors">Ainul islam</a>',
-                 : 'Also suitable as a mobile app for institutions.',
+               
             },
             bn: {
                 title: '🇧🇩 রেমিট্যান্স ক্যালকুলেটর', langToggle: 'English', modeSend: 'টাকা পাঠান', modeReverse: 'বিপরীত হিসাব',
@@ -286,7 +286,7 @@
                 customCurrencyCode: 'কাস্টম মুদ্রার কোড (যেমন: QAR)', customRate: 'কাস্টম বিনিময় হার',
                 // New footer lines
                 footerMain: 'তৈরি করেছেন ❤️ <a href="http://ainulislam.info" target="_blank" class="font-semibold text-primary-blue dark:text-accent-dark hover:underline transition-colors">Ainul islam</a>',
-                 : '',
+               
             }
         };
 
@@ -533,7 +533,7 @@
             
             // New Footer Logic
             DOM.footerMainCredit.innerHTML = getTranslation('footerMain');
-            DOM. .textContent = getTranslation(' ');
+       
 
             // 2. Update language toggle button
             DOM.langToggle.textContent = newLangToggleText;
