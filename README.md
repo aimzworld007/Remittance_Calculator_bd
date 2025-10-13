@@ -1,67 +1,60 @@
 # 🌍 Dynamic Remittance Calculator
 
-A modern, responsive **Remittance Calculator Web App** that helps users calculate remittance values from various foreign currencies to **Bangladeshi Taka (BDT)** — including the **2.5% government incentive**.  
-Built with ❤️ by [**Ainul Islam**](https://ainulislam.info)
+> A responsive bilingual web application for calculating remittance amounts from foreign currencies to Bangladeshi Taka (BDT), including the **2.5% government incentive**.  
+> 🔗 **Live Demo:** [https://remitbd.netlify.app](https://remitbd.netlify.app)
 
 ---
 
-## 📖 Overview
-
-**Dynamic Remittance Calculator** is a web-based tool designed to make remittance calculations fast, easy, and accurate.  
-It supports multiple currencies, a bilingual interface (English and Bengali), and a user-friendly responsive layout with **dark mode** for comfortable viewing.
+![RemitBD Preview](/remitbd.png)
 
 ---
 
-## ✨ Features
+## 🧭 Overview
 
-### 💱 Currency Conversion
-Convert from multiple international currencies to BDT:
-- 🇦🇪 UAE Dirham (AED)
-- 🇸🇦 Saudi Riyal (SAR)
-- 🇰🇼 Kuwaiti Dinar (KWD)
-- 🇶🇦 Qatar Riyal (QAR)
-- 🇴🇲 Omani Rial (OMR)
-- 🇧🇭 Bahraini Dinar (BHD)
-- 🇺🇸 US Dollar (USD)
-- 🇬🇧 British Pound (GBP)
+**Dynamic Remittance Calculator** helps users easily determine how much money their family or friends in Bangladesh will receive from international remittances.  
+It supports multiple foreign currencies, provides reverse calculations, and includes a 2.5% government incentive automatically in every transaction.
 
-You can also enter a **custom currency code and rate** for any unsupported currency.
+Built to be fast, simple, and mobile-friendly — with a modern dark/light interface and bilingual (English/Bengali) design.
 
 ---
 
-### 🔁 Two Calculation Modes
-1. **Send Money** → Calculate how much BDT the receiver will get for a given foreign amount.  
-2. **Reverse Calculation** → Calculate how much foreign currency is required to receive a target BDT amount.
+## ✨ Key Features
+
+### 💱 Multi-Currency Conversion
+Convert from popular foreign currencies to **Bangladeshi Taka (BDT)**:
+- 🇦🇪 **UAE Dirham (AED)**
+- 🇸🇦 **Saudi Riyal (SAR)**
+- 🇰🇼 **Kuwaiti Dinar (KWD)**
+- 🇶🇦 **Qatari Riyal (QAR)**
+- 🇴🇲 **Omani Rial (OMR)**
+- 🇧🇭 **Bahraini Dinar (BHD)**
+- 🇺🇸 **US Dollar (USD)**
+- 🇬🇧 **British Pound (GBP)**
+- ➕ **Custom Currency** – Enter your own currency code and exchange rate.
 
 ---
 
-### 💸 Remittance Incentive
-Automatically includes the **2.5% remittance incentive** in every calculation:
-> Example: Sending 600 AED at rate 33.00 → 19,800 BDT + 495 incentive = **20,295 BDT total**
+### 🔁 Dual Calculation Modes
+1. **Send Money** – Calculate how much BDT will be received for a given foreign amount.  
+2. **Reverse Calculation** – Find how much foreign currency you need to send to reach a target BDT amount.
 
 ---
 
-### 🌐 Multi-language Support
-Switch between **English** and **বাংলা (Bengali)** easily from the interface.
+### 💸 Automatic 2.5% Incentive
+Every transaction automatically includes the **Bangladesh Government’s 2.5% incentive**.
 
----
 
-### 🌓 Dynamic UI
-- Built with **Tailwind CSS**
-- Fully **responsive** for mobile and desktop
-- Includes **dark/light mode toggle**
-- Smooth animations and transitions
+View Online
 
----
+🌐 https://remitbd.netlify.app
 
-## 🧰 Technology Stack
 
-| Technology | Purpose |
-|-------------|----------|
-| **HTML5** | Page structure |
-| **Tailwind CSS** | Modern responsive styling |
-| **JavaScript (Vanilla)** | Core logic and UI interactivity |
-| **LocalStorage** | Save language preference and dark mode state |
+🧑‍💻 Author
 
----
+👤 Ainul Islam
+
+📜 License
+
+This project is open-source under the MIT License.
+You are free to modify, distribute, and use it for both personal and commercial purposes.
 
